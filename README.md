@@ -9,6 +9,7 @@ Mission Control's Spaces bar. The selected desktop's blue highlight wraps around
 - Works on Apple silicon and Intel (universal binary)
 - Supports multiple displays
 - Names follow the desktop when you reorder desktops
+- Optionally shows the name across the screen when you switch desktops (Control-←/→ or swipe)
 - Lives in the menu bar; the only permission it needs is Accessibility
 
 ## Requirements
@@ -35,7 +36,15 @@ drag it into `/Applications` yourself. You'll need the same **Open Anyway** step
 2. Type a name for any desktop. Leave a field empty to keep the macOS label ("Desktop 3").
 3. Open Mission Control (F3, Control-↑, or swipe up). Named desktops show their flag.
 
-From the same menu you can turn on **Open at Login**.
+When you switch desktops outside Mission Control (Control-←/→ or a trackpad swipe), the
+desktop's name appears across the middle of that display in white and fades away. Configure it
+from the same menu:
+
+- **Show Name When Switching**: turn it on or off (on by default)
+- **Name Opacity**: 25%, 50% (default), 75% or 100%
+- **Fade Duration**: 0.5, 1 (default), 1.5, 2 or 3 seconds
+
+From the same menu you can also turn on **Open at Login**.
 
 ## Accessibility
 

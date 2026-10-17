@@ -72,7 +72,13 @@ final class OverlayController {
   private var flags: [String: (window: NSWindow, view: FlagView)] = [:]
   private var timer: Timer?
   private var isActive = false
+  private var closedAt = Date.distantPast
   private var cachedSpaces: [DisplaySpaces] = []
+
+  /// True while Mission Control is open or was closed moments ago (e.g. by clicking a desktop).
+  var isMissionControlRecentlyOpen: Bool {
+    isActive || Date().timeIntervalSince(closedAt) < 1
+  }
   private var spacesReadAt = Date.distantPast
 
   func start() {
@@ -91,6 +97,7 @@ final class OverlayController {
     guard AXIsProcessTrusted(), let bars = reader.spacesBars() else {
       if isActive {
         isActive = false
+        closedAt = Date()
         flags.values.forEach { $0.window.orderOut(nil) }
         schedule(interval: Self.idleInterval)
       }

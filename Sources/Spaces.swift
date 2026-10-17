@@ -13,6 +13,8 @@ struct Space {
 struct DisplaySpaces {
   let displayUUID: String
   let spaces: [Space]
+  /// Key of the space currently shown on this display.
+  let currentKey: String?
 }
 
 enum Spaces {
@@ -24,16 +26,20 @@ enum Spaces {
     var desktopCounter = 0
     return raw.map { monitor in
       let spaces = (monitor["Spaces"] as? [[String: Any]] ?? []).map { space -> Space in
-        let uuid = space["uuid"] as? String ?? ""
-        let managedID = space["ManagedSpaceID"] as? Int ?? 0
-        // The original desktop on the main display has an empty uuid; fall back to its ID.
-        let key = uuid.isEmpty ? "id:\(managedID)" : uuid
         let isDesktop = (space["type"] as? Int ?? 0) == 0
         if isDesktop { desktopCounter += 1 }
-        return Space(key: key, desktopNumber: isDesktop ? desktopCounter : nil)
+        return Space(key: key(for: space), desktopNumber: isDesktop ? desktopCounter : nil)
       }
-      return DisplaySpaces(displayUUID: monitor["Display Identifier"] as? String ?? "", spaces: spaces)
+      return DisplaySpaces(displayUUID: monitor["Display Identifier"] as? String ?? "",
+                           spaces: spaces,
+                           currentKey: (monitor["Current Space"] as? [String: Any]).map(key))
     }
+  }
+
+  private static func key(for space: [String: Any]) -> String {
+    let uuid = space["uuid"] as? String ?? ""
+    // The original desktop on the main display has an empty uuid; fall back to its ID.
+    return uuid.isEmpty ? "id:\(space["ManagedSpaceID"] as? Int ?? 0)" : uuid
   }
 }
 
@@ -48,6 +54,32 @@ extension NSScreen {
   var axFrame: CGRect {
     let primaryHeight = NSScreen.screens.first?.frame.height ?? frame.height
     return CGRect(x: frame.minX, y: primaryHeight - frame.maxY, width: frame.width, height: frame.height)
+  }
+}
+
+/// Options for the name shown when switching spaces, set from the menu bar menu.
+enum SwitchBannerSettings {
+  static let enabledKey = "switchBannerEnabled"
+  static let opacityKey = "switchBannerOpacity"
+  static let durationKey = "switchBannerDuration"
+
+  static func registerDefaults() {
+    UserDefaults.standard.register(defaults: [enabledKey: true, opacityKey: 0.5, durationKey: 1.0])
+  }
+
+  static var isEnabled: Bool {
+    get { UserDefaults.standard.bool(forKey: enabledKey) }
+    set { UserDefaults.standard.set(newValue, forKey: enabledKey) }
+  }
+
+  static var opacity: Double {
+    get { UserDefaults.standard.double(forKey: opacityKey) }
+    set { UserDefaults.standard.set(newValue, forKey: opacityKey) }
+  }
+
+  static var duration: Double {
+    get { UserDefaults.standard.double(forKey: durationKey) }
+    set { UserDefaults.standard.set(newValue, forKey: durationKey) }
   }
 }
 
